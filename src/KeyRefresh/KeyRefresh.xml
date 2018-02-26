@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<widget id="KeyRefresh.widget.KeyRefresh" needsEntityContext="true" xmlns="http://www.mendix.com/widget/1.0/">
+    <name>KeyRefresh</name>
+    <description>The description of this widget.</description>
+
+    <icon />
+
+    <properties>
+        <property key="searchAttribute" type="attribute" required="true">
+            <caption>Search attribute</caption>
+            <category>Datasource</category>
+            <description></description>
+            <attributeTypes>
+                <attributeType name="String" />
+            </attributeTypes>
+        </property>
+        <property key="placeholder" type="string">
+            <caption>Placeholder for input</caption>
+            <category>Appearance</category>
+            <description>Dirk</description>
+        </property>
+        <property key="searchMicroflow" type="microflow" required="true">
+            <caption>Search microflow</caption>
+            <category>Behaviour</category>
+            <description>Dirk</description>
+           <returnType type="Void" />
+        </property>
+        <property key="listViewName" type="string" required="true">
+            <caption>Name of listview</caption>
+            <category>Behaviour</category>
+            <description>Dirk</description>
+        </property>
+        <property key="focusOutMicroflow" type="microflow" required="false">
+            <caption>Focus out microflow (Dirkified - optional)</caption>
+            <category>Dirk</category>
+            <description>Dirk</description>
+            <returnType type="Void" />
+        </property>
+        <property key="focusInMicroflow" type="microflow" required="false">
+            <caption>Focus In microflow (Dirkified - optional)</caption>
+            <category>Dirk</category>
+            <description>Dirk</description>
+            <returnType type="Void" />
+        </property>
+    </properties>
+</widget>
