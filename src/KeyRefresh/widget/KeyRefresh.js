@@ -41,6 +41,8 @@ define([
         focusInMicroflow: "",
         placeholder: "",
         listViewName: "",
+        minKeyStrokes: 0,
+        keyStrokeDelay: 0,
         _callAgain: false,
         _prevCount: 0,
         _currentFocus: 0,
@@ -86,15 +88,15 @@ define([
                 on(this._inputNode, "keyup", function(event) {
                     var charCount = event.currentTarget.value.length;
 
-                    if(((charCount >= 3 && charCount) || charCount < 3 && charCount < self._prevCount) && self.validKeyPress(event.keyCode)){
-                        charCount >= 3 ? context.set(attribute, event.currentTarget.value) : self.emptySearch(context);
+                    if(((charCount >= self.minKeyStrokes && charCount) || charCount < self.minKeyStrokes && charCount < self._prevCount) && self.validKeyPress(event.keyCode)){
+                        charCount >= self.minKeyStrokes ? context.set(attribute, event.currentTarget.value) : self.emptySearch(context);
                         if(!domClass.contains(self._inputParent, "form-label-group--searching")){
                             domClass.add(self._inputParent, "form-label-group--searching");
                         }
                         clearTimeout(self.keyPressTimeout);
-                        self.keyPressTimeout = setTimeout(() => {
+                        self.keyPressTimeout = setTimeout(function() {
                             self.callSearch(charCount);
-                        }, 250);
+                        }, self.keyStrokeDelay);
 
                     } else {
 
@@ -127,7 +129,7 @@ define([
             if(this._focusOutHandler === null){
                 on(this._inputNode, "focusout", function(event){
                     clearTimeout(self.keyPressTimeout);
-                    self.keyPressTimeout = setTimeout(() => {
+                    self.keyPressTimeout = setTimeout(function() {
                         //If there is a focus out microflow configured, the developer decides what happens with the search list.
                         if(self.focusOutMicroflow !== ""){
                             mx.data.action({
@@ -243,7 +245,9 @@ define([
                         listItem.innerHTML = listItem.innerHTML
                         .replace('<strong>', '')
                         .replace('</strong>', '')
-                        .replace(re, "<strong>" + val + "</strong>");
+                        .replace(re, function(str){
+                            return "<strong>" + str + "</strong>"
+                        });
                     }
 
                     self.addActive(list);

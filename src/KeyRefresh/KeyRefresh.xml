@@ -25,6 +25,16 @@
             <description>Dirk</description>
            <returnType type="Void" />
         </property>
+        <property key="minKeyStrokes" type="integer" defaultValue="3">
+            <caption>Number of keystrokes</caption>
+            <category>Behaviour</category>
+            <description>After how many key strokes should we query? Default 3</description>
+        </property>
+        <property key="keyStrokeDelay" type="integer" defaultValue="250">
+            <caption>Delay between keystrokes</caption>
+            <category>Behaviour</category>
+            <description>Dirk</description>
+        </property>
         <property key="listViewName" type="string" required="true">
             <caption>Name of listview</caption>
             <category>Behaviour</category>
