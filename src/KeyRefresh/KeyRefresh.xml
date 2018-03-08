@@ -12,7 +12,7 @@
             <description></description>
             <attributeTypes>
                 <attributeType name="String" />
-            </attributeTypes>
+            </attributeTypes> 
         </property>
         <property key="placeholder" type="string">
             <caption>Placeholder for input</caption>
