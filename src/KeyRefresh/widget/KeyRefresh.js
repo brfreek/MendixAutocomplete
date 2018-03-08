@@ -41,8 +41,11 @@ define([
         focusInMicroflow: "",
         placeholder: "",
         listViewName: "",
+        minKeyStrokes: 0,
+        keyStrokeDelay: 0,
         _callAgain: false,
         _prevCount: 0,
+        _prevValue: null,
         _currentFocus: 0,
         keyPressTimeout: null,
 
@@ -84,20 +87,16 @@ define([
             var listview = this._listviewSearch;
             if(this._onUpHandler === null){
                 on(this._inputNode, "keyup", function(event) {
+                    clearTimeout(self.keyPressTimeout);
                     var charCount = event.currentTarget.value.length;
+                    charCount >= self.minKeyStrokes ? context.set(attribute, event.currentTarget.value.trim()) : self.emptySearch(context);
+                    if(((charCount >= self.minKeyStrokes && charCount) || charCount < self.minKeyStrokes && charCount < self._prevCount) && self.validKeyPress(event.keyCode)){
 
-                    if(((charCount >= 3 && charCount) || charCount < 3 && charCount < self._prevCount) && self.validKeyPress(event.keyCode)){
-                        charCount >= 3 ? context.set(attribute, event.currentTarget.value) : self.emptySearch(context);
                         if(!domClass.contains(self._inputParent, "form-label-group--searching")){
-                            domClass.add(self._inputParent, "form-label-group--searching");
+                            self.keyPressTimeout = setTimeout(function() {
+                                self.callSearch(charCount);
+                            }, self.keyStrokeDelay);
                         }
-                        clearTimeout(self.keyPressTimeout);
-                        self.keyPressTimeout = setTimeout(() => {
-                            self.callSearch(charCount);
-                        }, 250);
-
-                    } else {
-
                     }
                 });
 
@@ -127,7 +126,7 @@ define([
             if(this._focusOutHandler === null){
                 on(this._inputNode, "focusout", function(event){
                     clearTimeout(self.keyPressTimeout);
-                    self.keyPressTimeout = setTimeout(() => {
+                    self.keyPressTimeout = setTimeout(function() {
                         //If there is a focus out microflow configured, the developer decides what happens with the search list.
                         if(self.focusOutMicroflow !== ""){
                             mx.data.action({
@@ -136,7 +135,7 @@ define([
                                     applyto: "selection",
                                     guids: [self._contextObj.getGuid()]
                                 }, callback: function(){
-                                    console.log("focus out of input")
+                                    console.log("focus out of input");
                                 }, error: function(){
 
                                 }
@@ -170,9 +169,13 @@ define([
                         })
 
                     } else {
+                        charCount >= self.minKeyStrokes ? context.set(attribute, event.currentTarget.value.trim()) : self.emptySearch(context);
 
-                        charCount >= 3 ? context.set(attribute, event.currentTarget.value) : self.emptySearch(context);
-                        self.callSearch(charCount);
+                        if((charCount >= self.minKeyStrokes || charCount < self.minKeyStrokes && charCount < self._prevCount)){
+                            if(!domClass.contains(self._inputParent, "form-label-group--searching")){
+                                self.callSearch(charCount);
+                            }
+                        }
                     }
 
                 });
@@ -203,8 +206,6 @@ define([
                 case 39:
                 case 40:
                 case 27:
-                case 17:
-                case 18:
                 case 18:
                 case 20:{
                     return false;
@@ -222,35 +223,55 @@ define([
         },
 
         callSearch: function(charCount) {
+            var self = this;
             var listview = this._listviewSearch;
 
-            var self = this;
+            if ((charCount >= self.minKeyStrokes && charCount) || charCount < self.minKeyStrokes && charCount < self._prevCount) {
+                domClass.add(self._inputParent, "form-label-group--searching");
+            }
+
             mx.data.action({
                 params: {
                     actionname: self.searchMicroflow,
                     applyto: "selection",
                     guids: [self._contextObj.getGuid()]
                 }, callback: function(cb){
-                    self._prevCount = charCount;
+
                     domClass.remove(self._inputParent, "form-label-group--searching");
-
                     var list = listview.getElementsByClassName("mx-listview-item");
-                    var val = self._inputNode.value;
-                    var re = new RegExp(val, "ig");
 
-                    for (var i = list.length - 1; i >= 0; i--) {
-                        var listItem = list[i].getElementsByClassName('mx-text')[0];
-                        listItem.innerHTML = listItem.innerHTML
-                        .replace('<strong>', '')
-                        .replace('</strong>', '')
-                        .replace(re, "<strong>" + val + "</strong>");
+                    if(charCount >= self.minKeyStrokes) {
+                        self.addActive(list);
+                        self.markAsStrong(list);
                     }
 
-                    self.addActive(list);
+                    if (self._inputNode.value !== self._prevValue && charCount >= self.minKeyStrokes) {
+                        self.callSearch(charCount);
+                    }
+
+                    self._prevValue = self._inputNode.value
+                    self._prevCount = charCount;
+
                 }, error: function(error){
                     console.log("Error: " +error);
                 }
             });
+        },
+
+        markAsStrong: function(list) {
+            var val = this._inputNode.value;
+            var re = new RegExp(val, "ig");
+
+            for (var i = list.length - 1; i >= 0; i--) {
+                var listItem = list[i].getElementsByClassName('mx-text')[0];
+                listItem.innerHTML = listItem.innerHTML
+                .trim()
+                .replace('<strong>', '')
+                .replace('</strong>', '')
+                .replace(re, function(str){
+                    return "<strong>" + str + "</strong>"
+                });
+            }
         },
 
         resize: function (box) {
